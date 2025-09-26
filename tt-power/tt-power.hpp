@@ -24,8 +24,8 @@ class TTP {
         char *filename; // eg. /sys/bus/pci/devices/0000:65:00.0/hwmon/hwmon2/power1_input
 
         void add_sample(double p) {
-            this->avg = (this->avg * (this->n / this->n+1) + p * (1 / (this->n+1)));
-            this->n += 1;               
+            this->avg = (this->avg * ((double)this->n / (this->n+1)) + p * ((double)1 / (this->n+1)));
+            this->n += 1;
         }
 
         int readIntFromFile(const char *filename) {
