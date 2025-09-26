@@ -21,11 +21,16 @@ class TTP {
     private:
         int n;
         double avg;
+		bool writeProfile;
+		char *profileFilename;
         char *filename; // eg. /sys/bus/pci/devices/0000:65:00.0/hwmon/hwmon2/power1_input
 
-        void add_sample(double p) {
+        void addSample(double p) {
             this->avg = (this->avg * ((double)this->n / (this->n+1)) + p * ((double)1 / (this->n+1)));
             this->n += 1;
+			if(this->writeProfile) {
+				this->writeToFile(this->avg);
+			}
         }
 
         int readIntFromFile(const char *filename) {
@@ -34,23 +39,46 @@ class TTP {
 
             if (!infile) {
                 std::cerr << "Failed to open file: " << filename << "\n";
-                return -1;
             }
 
             infile >> value;
             if (infile.fail()) {
                 std::cerr << "Failed to read integer from file: " << filename << "\n";
-                return -1;
             }
 
             return value;
         }
 
+		void createFile(char *filename) {
+			std::ofstream outFile(filename);
+			
+			if (!outFile) {
+	    	    std::cerr << "Error: could not open file for writing.\n";
+		    }
+
+			outFile << "power_watt" << std::endl;
+		}
+
+		void writeToFile(double value) {
+			std::ofstream outFile(this->profileFilename, std::ios::app);
+			
+			if (!outFile) {
+	    	    std::cerr << "Error: could not open file for writing.\n";
+		    }
+
+			outFile << std::fixed;
+            outFile << std::setprecision(3);
+			outFile << value << std::endl;
+		}
+
     public:
-        TTP(char *filename) {
+
+		TTP(char *filename) {
             this->reset();
             this->filename = filename;
-        }           
+			this->writeProfile = false;
+        }
+
         ~TTP() {}
 
         double getPower(bool &poison) {
@@ -58,7 +86,7 @@ class TTP {
                 int p = this->readIntFromFile(this->filename);
                 // 12000000 = 12W
                 double power = p / 1000000.0; // Convert to watts
-                this->add_sample(power);
+                this->addSample(power);
             }
             return this->avg;
         }
@@ -66,6 +94,12 @@ class TTP {
 		void reset() {
 			this->n = 0;
 			this->avg = 0.0;
+		}
+
+		void enableProfiling(char *filename) {
+			this->writeProfile = true;
+			this->profileFilename = filename;
+			this->createFile(filename);
 		}
 };
 } // namespace tt_power
