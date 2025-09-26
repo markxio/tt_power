@@ -48,8 +48,7 @@ class TTP {
 
     public:
         TTP(char *filename) {
-            this->n = 0;
-            this->avg = 0.0;
+            this->reset();
             this->filename = filename;
         }           
         ~TTP() {}
@@ -63,5 +62,10 @@ class TTP {
             }
             return this->avg;
         }
+
+		void reset() {
+			this->n = 0;
+			this->avg = 0.0;
+		}
 };
 } // namespace tt_power
