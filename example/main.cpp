@@ -1,4 +1,4 @@
-#include "tt-power.hpp"
+#include "tt_power.hpp"
 #include "matmul.hpp"
 #include <omp.h>
 
